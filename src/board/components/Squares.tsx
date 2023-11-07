@@ -1,26 +1,25 @@
 import { Square } from './Square';
-import { useState } from "react";
 import {
-  FenState,
-  START_FEN_STRING
-} from "../../utils/FenUtils";
-import {
-  generateMovesFromSrc,
-  Move,
-  performMove
-} from "../../utils/MoveUtils";
-import { Coordinate } from "../../utils/CoordinateUtils";
+  type ReactElement,
+  useState,
+} from 'react';
+import { Move } from '../../utils/MoveUtils';
+import { Coordinate } from '../../utils/CoordinateUtils';
+import { type FenState } from '../../utils/FenUtils';
 
 interface SquaresProps {
-  boardWidth: number;
+  boardWidth: number
+  fen: FenState
 }
 
-export function Squares(props: SquaresProps) {
-  const [fen, setFen] = useState<FenState>(new FenState(START_FEN_STRING));
+export function Squares(props: SquaresProps): ReactElement {
   const [src, setSrc] = useState<Coordinate>(new Coordinate(-1, -1));
   const [isMoveInitiated, setIsMoveInitiated] = useState<boolean>(false);
   const [possTrgs, setPossTrgs] = useState<Coordinate[]>([]);
-  const { boardWidth } = props;
+  const {
+    boardWidth,
+    fen,
+  } = props;
 
   return (
     <div>
@@ -31,32 +30,34 @@ export function Squares(props: SquaresProps) {
             style={{
               display: 'flex',
               flexWrap: 'nowrap',
-              width: boardWidth
+              width: boardWidth,
             }}
           >
             {[...Array(9)].map((_, col) => {
               const squareColor = col % 2 === row % 2 ? 'white' : 'black';
               const coord = new Coordinate(row, col);
               const piece = fen.getPieceAt(coord);
-              const pieceNode = (piece ? <p
+              const pieceNode = (piece
+                ? <p
                   style={{
                     transform: `rotate(${piece.getOwner() === 'w' ? '180' : '0'}deg)`,
                   }}>
                   {piece.displayCharacter}
-                </p> : <></>
+                </p>
+                : <></>
               );
 
-              const handleClick = () => {
+              const handleClick = (): void => {
                 if (isMoveInitiated) {
                   const move = new Move(src, coord);
-                  const newFen = performMove(fen, move);
-                  setFen(newFen);
+                  fen.performMove(move);
+                  console.debug(fen);
                   setIsMoveInitiated(false);
                   setPossTrgs([]);
                 } else {
                   setSrc(coord);
                   setIsMoveInitiated(true);
-                  const moves = generateMovesFromSrc(fen, coord);
+                  const moves = fen.generateMovesFromSrc(coord);
                   setPossTrgs(moves.map((move: Move) => {
                     return move.trg;
                   }));

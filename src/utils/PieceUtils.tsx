@@ -13,7 +13,7 @@ export const MOVEMENT_PATTERNS: Record<string, number[]> = {
   n: [1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
   c: [1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
   t: [1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-}
+};
 
 export const DISPLAY_CHARACTERS: Record<string, string> = {
   o: '王',
@@ -48,23 +48,25 @@ export type PromotedLance = 'C' | 'c';
 export type PromotedPawn = 'T' | 't';
 
 export type PieceString = King
-  | Rook
-  | Bishop
-  | GoldGeneral
-  | SilverGeneral
-  | Knight
-  | Lance
-  | Pawn
-  | Dragon
-  | Horse
-  | PromotedGeneral
-  | PromotedKnight
-  | PromotedLance
-  | PromotedPawn;
+| Rook
+| Bishop
+| GoldGeneral
+| SilverGeneral
+| Knight
+| Lance
+| Pawn
+| Dragon
+| Horse
+| PromotedGeneral
+| PromotedKnight
+| PromotedLance
+| PromotedPawn;
 
 export class Piece {
   readonly pieceString: PieceString;
+
   readonly movementPattern: number[];
+
   readonly displayCharacter: string;
 
   constructor(pieceString: PieceString) {
