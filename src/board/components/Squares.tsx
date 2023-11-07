@@ -1,14 +1,10 @@
 import { Square } from './Square';
 import { useState } from "react";
 import {
-  FenState,
+  BoardState,
   START_FEN_STRING
-} from "../../utils/FenUtils";
-import {
-  generateMovesFromSrc,
-  Move,
-  performMove
-} from "../../utils/MoveUtils";
+} from "../../utils/BoardUtils";
+import { Move } from "../../utils/MoveUtils";
 import { Coordinate } from "../../utils/CoordinateUtils";
 
 interface SquaresProps {
@@ -16,10 +12,11 @@ interface SquaresProps {
 }
 
 export function Squares(props: SquaresProps) {
-  const [fen, setFen] = useState<FenState>(new FenState(START_FEN_STRING));
+  const [board, setBoard] = useState<BoardState>(new BoardState(START_FEN_STRING));
   const [src, setSrc] = useState<Coordinate>(new Coordinate(-1, -1));
   const [isMoveInitiated, setIsMoveInitiated] = useState<boolean>(false);
   const [possTrgs, setPossTrgs] = useState<Coordinate[]>([]);
+
   const { boardWidth } = props;
 
   return (
@@ -37,7 +34,7 @@ export function Squares(props: SquaresProps) {
             {[...Array(9)].map((_, col) => {
               const squareColor = col % 2 === row % 2 ? 'white' : 'black';
               const coord = new Coordinate(row, col);
-              const piece = fen.getPieceAt(coord);
+              const piece = board.getPieceAt(coord);
               const pieceNode = (piece ? <p
                   style={{
                     transform: `rotate(${piece.getOwner() === 'w' ? '180' : '0'}deg)`,
@@ -49,17 +46,21 @@ export function Squares(props: SquaresProps) {
               const handleClick = () => {
                 if (isMoveInitiated) {
                   const move = new Move(src, coord);
-                  const newFen = performMove(fen, move);
-                  setFen(newFen);
+                  if (board.validateMove(move)) {
+                    const moveFen = board.performMove(move);
+                    setBoard(moveFen);
+                  }
                   setIsMoveInitiated(false);
                   setPossTrgs([]);
                 } else {
                   setSrc(coord);
-                  setIsMoveInitiated(true);
-                  const moves = generateMovesFromSrc(fen, coord);
-                  setPossTrgs(moves.map((move: Move) => {
-                    return move.trg;
-                  }));
+                  const moves = board.generateMovesFromSrc(coord);
+                  if (moves.length !== 0) {
+                    setIsMoveInitiated(true);
+                    setPossTrgs(moves.map((move: Move) => {
+                      return move.trg;
+                    }));
+                  }
                 }
               };
 
