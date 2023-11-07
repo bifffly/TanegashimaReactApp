@@ -1,5 +1,8 @@
 import { Coordinate } from "./CoordinateUtils";
-import {Piece, PieceString} from "./PieceUtils";
+import {
+  Piece,
+  PieceString
+} from "./PieceUtils";
 
 export const START_FEN_STRING: string = 'LKSGOGSKL/1R5B1/PPPPPPPPP/9/9/9/ppppppppp/1b5r1/lksgogskl b - - 0';
 

@@ -1,4 +1,4 @@
-import {ReactNode} from "react";
+import { ReactNode } from "react";
 
 const LIGHT_SQUARE_STYLE = { backgroundColor: '#F0D9B5'};
 const DARK_SQUARE_STYLE = { backgroundColor: '#B58863' };
