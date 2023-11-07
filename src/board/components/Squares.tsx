@@ -1,17 +1,19 @@
+import {
+  type ReactElement, useState,
+} from 'react';
 import { Square } from './Square';
-import { useState } from "react";
 import {
   BoardState,
-  START_FEN_STRING
-} from "../../utils/BoardUtils";
-import { Move } from "../../utils/MoveUtils";
-import { Coordinate } from "../../utils/CoordinateUtils";
+  START_FEN_STRING,
+} from '../../utils/BoardUtils';
+import { Move } from '../../utils/MoveUtils';
+import { Coordinate } from '../../utils/CoordinateUtils';
 
 interface SquaresProps {
-  boardWidth: number;
+  boardWidth: number
 }
 
-export function Squares(props: SquaresProps) {
+export function Squares(props: SquaresProps): ReactElement {
   const [board, setBoard] = useState<BoardState>(new BoardState(START_FEN_STRING));
   const [src, setSrc] = useState<Coordinate>(new Coordinate(-1, -1));
   const [isMoveInitiated, setIsMoveInitiated] = useState<boolean>(false);
@@ -28,22 +30,24 @@ export function Squares(props: SquaresProps) {
             style={{
               display: 'flex',
               flexWrap: 'nowrap',
-              width: boardWidth
+              width: boardWidth,
             }}
           >
             {[...Array(9)].map((_, col) => {
               const squareColor = col % 2 === row % 2 ? 'white' : 'black';
               const coord = new Coordinate(row, col);
               const piece = board.getPieceAt(coord);
-              const pieceNode = (piece ? <p
+              const pieceNode = (piece
+                ? <p
                   style={{
                     transform: `rotate(${piece.getOwner() === 'w' ? '180' : '0'}deg)`,
                   }}>
                   {piece.displayCharacter}
-                </p> : <></>
+                </p>
+                : <></>
               );
 
-              const handleClick = () => {
+              const handleClick = (): void => {
                 if (isMoveInitiated) {
                   const move = new Move(src, coord);
                   if (board.validateMove(move)) {

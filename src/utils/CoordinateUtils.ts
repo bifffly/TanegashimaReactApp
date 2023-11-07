@@ -1,5 +1,6 @@
 export class Coordinate {
   readonly row: number;
+
   readonly col: number;
 
   constructor(row: number, col: number) {
@@ -16,7 +17,7 @@ export class Coordinate {
   }
 
   public equals(coord: Coordinate): boolean {
-    return this.row === coord.row
-      && this.col === coord.col;
+    return this.row === coord.row &&
+      this.col === coord.col;
   }
 }

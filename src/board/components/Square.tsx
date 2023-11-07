@@ -1,26 +1,42 @@
-import { ReactNode } from "react";
+import {
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
-const LIGHT_SQUARE_STYLE = { backgroundColor: '#F0D9B5'};
-const DARK_SQUARE_STYLE = { backgroundColor: '#B58863' };
+const LIGHT_SQUARE_STYLE = {
+  backgroundColor: '#F0D9B5',
+};
+const DARK_SQUARE_STYLE = {
+  backgroundColor: '#B58863',
+};
 
-const LIGHT_HIGHLIGHTED_SQUARE_STYLE = { backgroundColor: '#FF0000' };
-const DARK_HIGHLIGHTED_SQUARE_STYLE = { backgroundColor: '#800000' };
+const LIGHT_HIGHLIGHTED_SQUARE_STYLE = {
+  backgroundColor: '#FF0000',
+};
+const DARK_HIGHLIGHTED_SQUARE_STYLE = {
+  backgroundColor: '#800000',
+};
 
-interface SquareProps {
-  squareColor: 'white' | 'black';
-  highlighted: boolean;
-  boardWidth: number;
-  onClick: () => void;
-  children: ReactNode;
+interface Size {
+  width: string
+  height: string
 }
 
-export function Square(props: SquareProps) {
+interface SquareProps {
+  squareColor: 'white' | 'black'
+  highlighted: boolean
+  boardWidth: number
+  onClick: () => void
+  children: ReactNode
+}
+
+export function Square(props: SquareProps): ReactElement {
   const {
     squareColor,
     highlighted,
     boardWidth,
     onClick,
-    children
+    children,
   } = props;
 
   const squareStyle = {
@@ -30,10 +46,10 @@ export function Square(props: SquareProps) {
         : DARK_HIGHLIGHTED_SQUARE_STYLE
       : squareColor === 'white'
         ? LIGHT_SQUARE_STYLE
-        : DARK_SQUARE_STYLE)
+        : DARK_SQUARE_STYLE),
   };
 
-  const size = (width: number) => ({
+  const size = (width: number): Size => ({
     width: `${width / 9}px`,
     height: `${width / 9}px`,
   });
@@ -41,7 +57,7 @@ export function Square(props: SquareProps) {
   const center = {
     display: 'flex',
     justifyContent: 'center',
-  }
+  };
 
   return (
     <div

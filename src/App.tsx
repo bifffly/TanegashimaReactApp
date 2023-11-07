@@ -1,9 +1,9 @@
-import { Board } from "./board/components/Board";
-import './App.css'
+import { Board } from './board/components/Board';
+import './App.css';
+import type { ReactElement } from 'react';
 
-export function App() {
+export function App(): ReactElement {
   return (
     <Board />
-  )
+  );
 }
-

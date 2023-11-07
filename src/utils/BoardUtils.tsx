@@ -1,9 +1,9 @@
-import { Coordinate } from "./CoordinateUtils";
+import { Coordinate } from './CoordinateUtils';
 import {
   Piece,
-  PieceString
-} from "./PieceUtils";
-import { Move } from "./MoveUtils";
+  type PieceString,
+} from './PieceUtils';
+import { Move } from './MoveUtils';
 
 export const START_FEN_STRING: string = 'LKSGOGSKL/1R5B1/PPPPPPPPP/9/9/9/ppppppppp/1b5r1/lksgogskl b - - 0';
 
@@ -30,9 +30,13 @@ export enum Direction {
 
 export class BoardState {
   board: string;
+
   turn: Player;
+
   whiteCaptures: string;
+
   blackCaptures: string;
+
   turnNumber: number;
 
   constructor(fenString: string) {
@@ -54,29 +58,29 @@ export class BoardState {
 
   expandBoard(): string {
     return this.board
-      .replace(/9/g, "111111111")
-      .replace(/8/g, "11111111")
-      .replace(/7/g, "1111111")
-      .replace(/6/g, "111111")
-      .replace(/5/g, "11111")
-      .replace(/4/g, "1111")
-      .replace(/3/g, "111")
-      .replace(/2/g, "11");
+      .replace(/9/g, '111111111')
+      .replace(/8/g, '11111111')
+      .replace(/7/g, '1111111')
+      .replace(/6/g, '111111')
+      .replace(/5/g, '11111')
+      .replace(/4/g, '1111')
+      .replace(/3/g, '111')
+      .replace(/2/g, '11');
   }
 
   static condenseBoard(board: string): string {
     return board
-      .replace(/111111111/g, "9")
-      .replace(/11111111/g, "8")
-      .replace(/1111111/g, "7")
-      .replace(/111111/g, "6")
-      .replace(/11111/g, "5")
-      .replace(/1111/g, "4")
-      .replace(/111/g, "3")
-      .replace(/11/g, "2")
+      .replace(/111111111/g, '9')
+      .replace(/11111111/g, '8')
+      .replace(/1111111/g, '7')
+      .replace(/111111/g, '6')
+      .replace(/11111/g, '5')
+      .replace(/1111/g, '4')
+      .replace(/111/g, '3')
+      .replace(/11/g, '2');
   }
 
-  generateMovesFromSrc(src: Coordinate) {
+  generateMovesFromSrc(src: Coordinate): Move[] {
     const moves: Move[] = [];
     const piece = this.getPieceAt(src);
     if (piece) {
@@ -114,7 +118,7 @@ export class BoardState {
     return moves;
   }
 
-  validateMove(move: Move) {
+  validateMove(move: Move): boolean {
     const moves: Move[] = this.generateMovesFromSrc(move.src);
 
     let isPresent = false;
@@ -152,7 +156,7 @@ export class BoardState {
       : this.blackCaptures;
     const moveTurnNumber = this.turn === 'w' ? this.turnNumber + 1 : this.turnNumber;
 
-    const moveFenString = [moveBoard, moveTurn, moveWhiteCaptures, moveBlackCaptures, moveTurnNumber].join(" ");
+    const moveFenString = [moveBoard, moveTurn, moveWhiteCaptures, moveBlackCaptures, moveTurnNumber].join(' ');
     return new BoardState(moveFenString);
   }
 }
