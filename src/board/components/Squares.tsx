@@ -2,7 +2,8 @@ import {
   type ReactElement, useState,
 } from 'react';
 import {
-  Grid, Typography,
+  createTheme,
+  Grid, ThemeProvider, Typography,
 } from '@mui/material';
 import {
   BoardState, Player,
@@ -18,18 +19,27 @@ export function Squares(): ReactElement {
   const [isMoveInitiated, setIsMoveInitiated] = useState<boolean>(false);
   const [possTrgs, setPossTrgs] = useState<Coordinate[]>([]);
 
+  const theme = createTheme();
+  theme.typography.h4 = {
+    fontSize: '1rem',
+    [theme.breakpoints.up('sm')]: {
+      fontSize: '1.5rem',
+    },
+  };
+
   return (
-    <Grid container spacing={0}>
+    <Grid
+      container
+      spacing={0}
+    >
       {[...Array(9)].map((_, row) => {
         return (
           <Grid
+            key={row}
             container
             item
-            xs={12}
-            spacing={0}
             columns={9}
             alignItems='stretch'
-            key={row}
             sx={{
               display: 'flex',
               flexWrap: 'nowrap',
@@ -40,15 +50,17 @@ export function Squares(): ReactElement {
               const coord = new Coordinate(row, col);
               const piece = board.getPieceAt(coord);
               const pieceNode = (piece
-                ? <Typography
-                  variant='h4'
-                  style={{
-                    transform: `rotate(${piece.getOwner() === Player.WHITE ? '180' : '0'}deg)`,
-                  }}>
-                  {piece.displayCharacter}
-                </Typography>
-                : <></>
-              );
+                ? <ThemeProvider theme={theme}>
+                  <Typography
+                    variant='h4'
+                    sx={{
+                      transform: `rotate(${piece.getOwner() === Player.WHITE ? '180' : '0'}deg)`,
+                    }}
+                  >
+                    {piece.displayCharacter}
+                  </Typography>
+                </ThemeProvider>
+                : <></>);
 
               const handleClick = (): void => {
                 if (isMoveInitiated) {
