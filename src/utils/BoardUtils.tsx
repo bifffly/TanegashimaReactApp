@@ -1,8 +1,5 @@
+import { Piece } from './PieceUtils';
 import { Coordinate } from './CoordinateUtils';
-import {
-  Piece,
-  type PieceString,
-} from './PieceUtils';
 import { Move } from './MoveUtils';
 
 export const START_FEN_STRING: string = 'LKSGOGSKL/1R5B1/PPPPPPPPP/9/9/9/ppppppppp/1b5r1/lksgogskl b - - 0';
@@ -52,7 +49,7 @@ export class BoardState {
   getPieceAt(coord: Coordinate): Piece | undefined {
     const expandedBoard = this.expandBoard();
     const char = expandedBoard.charAt(coord.getFenIdx());
-    const pieceString = char !== '1' ? char as PieceString : undefined;
+    const pieceString = char !== '1' ? char : undefined;
     return pieceString ? new Piece(pieceString) : undefined;
   }
 
@@ -93,7 +90,7 @@ export class BoardState {
       for (let i = 0; i < Object.keys(Direction).length; i++) {
         const directionLimit = pattern[i];
         for (let n = 0; n < directionLimit; n++) {
-          const directionOffsets = piece.getOwner() === 'w'
+          const directionOffsets = piece.getOwner() === Player.WHITE
             ? WHITE_DIRECTION_OFFSETS
             : BLACK_DIRECTION_OFFSETS;
           const trgIdx = src.getFenIdx() + directionOffsets[i] * (n + 1);
@@ -154,7 +151,7 @@ export class BoardState {
         ? this.blackCaptures + trgPiece.pieceString
         : trgPiece.pieceString
       : this.blackCaptures;
-    const moveTurnNumber = this.turn === 'w' ? this.turnNumber + 1 : this.turnNumber;
+    const moveTurnNumber = this.turn === Player.WHITE ? this.turnNumber + 1 : this.turnNumber;
 
     const moveFenString = [moveBoard, moveTurn, moveWhiteCaptures, moveBlackCaptures, moveTurnNumber].join(' ');
     return new BoardState(moveFenString);

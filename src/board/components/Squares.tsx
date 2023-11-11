@@ -1,36 +1,38 @@
 import {
   type ReactElement, useState,
 } from 'react';
-import { Square } from './Square';
 import {
-  BoardState,
+  Grid, Typography,
+} from '@mui/material';
+import {
+  BoardState, Player,
   START_FEN_STRING,
 } from '../../utils/BoardUtils';
 import { Move } from '../../utils/MoveUtils';
 import { Coordinate } from '../../utils/CoordinateUtils';
+import { Square } from './Square';
 
-interface SquaresProps {
-  boardWidth: number
-}
-
-export function Squares(props: SquaresProps): ReactElement {
+export function Squares(): ReactElement {
   const [board, setBoard] = useState<BoardState>(new BoardState(START_FEN_STRING));
   const [src, setSrc] = useState<Coordinate>(new Coordinate(-1, -1));
   const [isMoveInitiated, setIsMoveInitiated] = useState<boolean>(false);
   const [possTrgs, setPossTrgs] = useState<Coordinate[]>([]);
 
-  const { boardWidth } = props;
-
   return (
-    <div>
+    <Grid container spacing={0}>
       {[...Array(9)].map((_, row) => {
         return (
-          <div
-            key={row.toString()}
-            style={{
+          <Grid
+            container
+            item
+            xs={12}
+            spacing={0}
+            columns={9}
+            alignItems='stretch'
+            key={row}
+            sx={{
               display: 'flex',
               flexWrap: 'nowrap',
-              width: boardWidth,
             }}
           >
             {[...Array(9)].map((_, col) => {
@@ -38,12 +40,13 @@ export function Squares(props: SquaresProps): ReactElement {
               const coord = new Coordinate(row, col);
               const piece = board.getPieceAt(coord);
               const pieceNode = (piece
-                ? <p
+                ? <Typography
+                  variant='h4'
                   style={{
-                    transform: `rotate(${piece.getOwner() === 'w' ? '180' : '0'}deg)`,
+                    transform: `rotate(${piece.getOwner() === Player.WHITE ? '180' : '0'}deg)`,
                   }}>
                   {piece.displayCharacter}
-                </p>
+                </Typography>
                 : <></>
               );
 
@@ -81,16 +84,15 @@ export function Squares(props: SquaresProps): ReactElement {
                   key={`${row}${col}`}
                   squareColor={squareColor}
                   highlighted={shouldBeHighlighted}
-                  boardWidth={boardWidth}
                   onClick={handleClick}
                 >
                   {pieceNode}
                 </Square>
               );
             })}
-          </div>
+          </Grid>
         );
       })}
-    </div>
+    </Grid>
   );
 }

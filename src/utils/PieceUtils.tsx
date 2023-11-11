@@ -1,3 +1,5 @@
+import { Player } from './BoardUtils';
+
 export const MOVEMENT_PATTERNS: Record<string, number[]> = {
   o: [1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
   r: [8, 8, 8, 8, 0, 0, 0, 0, 0, 0],
@@ -16,7 +18,8 @@ export const MOVEMENT_PATTERNS: Record<string, number[]> = {
 };
 
 export const DISPLAY_CHARACTERS: Record<string, string> = {
-  o: '王',
+  o: '玉',
+  O: '王',
   r: '飛',
   b: '角',
   g: '金',
@@ -32,52 +35,26 @@ export const DISPLAY_CHARACTERS: Record<string, string> = {
   t: 'と',
 };
 
-export type King = 'O' | 'o';
-export type Rook = 'R' | 'r';
-export type Bishop = 'B' | 'b';
-export type GoldGeneral = 'G' | 'g';
-export type SilverGeneral = 'S' | 's';
-export type Knight = 'K' | 'k';
-export type Lance = 'L' | 'l';
-export type Pawn = 'P' | 'p';
-export type Dragon = 'D' | 'd';
-export type Horse = 'H' | 'h';
-export type PromotedGeneral = 'Z' | 'z';
-export type PromotedKnight = 'N' | 'n';
-export type PromotedLance = 'C' | 'c';
-export type PromotedPawn = 'T' | 't';
-
-export type PieceString = King
-| Rook
-| Bishop
-| GoldGeneral
-| SilverGeneral
-| Knight
-| Lance
-| Pawn
-| Dragon
-| Horse
-| PromotedGeneral
-| PromotedKnight
-| PromotedLance
-| PromotedPawn;
-
 export class Piece {
-  readonly pieceString: PieceString;
+  readonly pieceString: string;
 
   readonly movementPattern: number[];
 
   readonly displayCharacter: string;
 
-  constructor(pieceString: PieceString) {
+  constructor(pieceString: string) {
     this.pieceString = pieceString;
     this.movementPattern = MOVEMENT_PATTERNS[pieceString.toLowerCase()];
-    this.displayCharacter = DISPLAY_CHARACTERS[pieceString.toLowerCase()];
+    this.displayCharacter = DISPLAY_CHARACTERS[
+      pieceString.match(/[Oo]/)
+        ? pieceString
+        : pieceString.toLowerCase()
+    ];
   }
 
   getOwner(): string {
     return /[a-z]/g.test(this.pieceString)
-      ? 'b'
-      : 'w';
+      ? Player.BLACK
+      : Player.WHITE;
   }
 }
