@@ -1,21 +1,55 @@
-const LIGHT_SQUARE_STYLE = { backgroundColor: '#F0D9B5'};
-const DARK_SQUARE_STYLE = { backgroundColor: '#B58863' };
+import {
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
-interface SquareProps {
-  squareColor: 'white' | 'black';
-  boardWidth: number;
+const LIGHT_SQUARE_STYLE = {
+  backgroundColor: '#F0D9B5',
+};
+const DARK_SQUARE_STYLE = {
+  backgroundColor: '#B58863',
+};
+
+const LIGHT_HIGHLIGHTED_SQUARE_STYLE = {
+  backgroundColor: '#FF0000',
+};
+const DARK_HIGHLIGHTED_SQUARE_STYLE = {
+  backgroundColor: '#800000',
+};
+
+interface Size {
+  width: string
+  height: string
 }
 
-export function Square(props: SquareProps) {
-  const { squareColor, boardWidth } = props;
+interface SquareProps {
+  squareColor: 'white' | 'black'
+  highlighted: boolean
+  boardWidth: number
+  onClick: () => void
+  children: ReactNode
+}
+
+export function Square(props: SquareProps): ReactElement {
+  const {
+    squareColor,
+    highlighted,
+    boardWidth,
+    onClick,
+    children,
+  } = props;
 
   const squareStyle = {
-    ...(squareColor === 'white'
-      ? LIGHT_SQUARE_STYLE
-      : DARK_SQUARE_STYLE)
+    ...(highlighted
+      ? squareColor === 'white'
+        ? LIGHT_HIGHLIGHTED_SQUARE_STYLE
+        : DARK_HIGHLIGHTED_SQUARE_STYLE
+      : squareColor === 'white'
+        ? LIGHT_SQUARE_STYLE
+        : DARK_SQUARE_STYLE),
   };
 
-  const size = (width: number) => ({
+  const size = (width: number): Size => ({
     width: `${width / 9}px`,
     height: `${width / 9}px`,
   });
@@ -23,15 +57,18 @@ export function Square(props: SquareProps) {
   const center = {
     display: 'flex',
     justifyContent: 'center',
-  }
+  };
 
   return (
     <div
       style={{
         ...squareStyle,
         ...size(boardWidth),
-        ...center
+        ...center,
       }}
-    />
+      onClick={onClick}
+    >
+      {children}
+    </div>
   );
 }
