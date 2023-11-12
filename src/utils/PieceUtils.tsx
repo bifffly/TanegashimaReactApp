@@ -35,6 +35,21 @@ export const DISPLAY_CHARACTERS: Record<string, string> = {
   t: 'と',
 };
 
+export const PIECE_PROMOTION_MAP: Record<string, string> = {
+  r: 'd',
+  R: 'D',
+  b: 'h',
+  B: 'H',
+  s: 'z',
+  S: 'Z',
+  k: 'n',
+  K: 'N',
+  l: 'c',
+  L: 'C',
+  p: 't',
+  P: 'T',
+};
+
 export class Piece {
   readonly pieceString: string;
 
@@ -52,7 +67,7 @@ export class Piece {
     ];
   }
 
-  getOwner(): string {
+  getOwner(): Player {
     return /[a-z]/g.test(this.pieceString)
       ? Player.BLACK
       : Player.WHITE;

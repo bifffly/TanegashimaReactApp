@@ -1,4 +1,6 @@
-import { Piece } from './PieceUtils';
+import {
+  Piece, PIECE_PROMOTION_MAP,
+} from './PieceUtils';
 import { Coordinate } from './CoordinateUtils';
 import { Move } from './MoveUtils';
 
@@ -103,7 +105,7 @@ export class BoardState {
           }
 
           // Can move here!
-          moves.push(new Move(src, trg));
+          moves.push(new Move(piece.getOwner(), src, trg));
 
           // Move in this direction blocked by opponent piece, can't move any further
           if (trgPiece && trgPiece.getOwner() !== this.turn) {
@@ -133,7 +135,10 @@ export class BoardState {
     const expandedBoard = this.expandBoard();
     const srcIdx = move.src.getFenIdx();
     const trgIdx = move.trg.getFenIdx();
-    const srcChar = expandedBoard.charAt(srcIdx);
+    let srcChar = expandedBoard.charAt(srcIdx);
+    if (move.isPromotionEligible() && Object.keys(PIECE_PROMOTION_MAP).includes(srcChar)) {
+      srcChar = PIECE_PROMOTION_MAP[srcChar];
+    }
     const trgPiece = this.getPieceAt(move.trg);
 
     const trgReplacedBoard = expandedBoard.substring(0, trgIdx) + srcChar + expandedBoard.substring(trgIdx + 1);
