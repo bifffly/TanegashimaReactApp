@@ -2,6 +2,9 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
+import {
+  Box, Grid,
+} from '@mui/material';
 
 const LIGHT_SQUARE_STYLE = {
   backgroundColor: '#F0D9B5',
@@ -17,15 +20,9 @@ const DARK_HIGHLIGHTED_SQUARE_STYLE = {
   backgroundColor: '#800000',
 };
 
-interface Size {
-  width: string
-  height: string
-}
-
 interface SquareProps {
   squareColor: 'white' | 'black'
   highlighted: boolean
-  boardWidth: number
   onClick: () => void
   children: ReactNode
 }
@@ -34,7 +31,6 @@ export function Square(props: SquareProps): ReactElement {
   const {
     squareColor,
     highlighted,
-    boardWidth,
     onClick,
     children,
   } = props;
@@ -49,26 +45,31 @@ export function Square(props: SquareProps): ReactElement {
         : DARK_SQUARE_STYLE),
   };
 
-  const size = (width: number): Size => ({
-    width: `${width / 9}px`,
-    height: `${width / 9}px`,
-  });
+  const size = {
+    aspectRatio: '1',
+  };
 
   const center = {
     display: 'flex',
     justifyContent: 'center',
+    alignItems: 'center',
   };
 
   return (
-    <div
-      style={{
-        ...squareStyle,
-        ...size(boardWidth),
-        ...center,
-      }}
-      onClick={onClick}
+    <Grid
+      item
+      xs={1}
     >
-      {children}
-    </div>
+      <Box
+        sx={{
+          ...squareStyle,
+          ...size,
+          ...center,
+        }}
+        onClick={onClick}
+      >
+        {children}
+      </Box>
+    </Grid>
   );
 }
