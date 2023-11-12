@@ -11,7 +11,16 @@ import {
 } from '../../utils/BoardUtils';
 import { Move } from '../../utils/MoveUtils';
 import { Coordinate } from '../../utils/CoordinateUtils';
+import { PIECE_PROMOTION_MAP } from '../../utils/PieceUtils';
 import { Square } from './Square';
+
+const PROMOTED_PIECE_COLOR = {
+  color: '#FF0000',
+};
+
+const UNPROMOTED_PIECE_COLOR = {
+  color: '#000000',
+};
 
 export function Squares(): ReactElement {
   const [board, setBoard] = useState<BoardState>(new BoardState(START_FEN_STRING));
@@ -49,22 +58,27 @@ export function Squares(): ReactElement {
               const squareColor = col % 2 === row % 2 ? 'white' : 'black';
               const coord = new Coordinate(row, col);
               const piece = board.getPieceAt(coord);
-              const pieceNode = (piece
-                ? <ThemeProvider theme={theme}>
+              let pieceNode = (<></>);
+              if (piece) {
+                const pieceColor = Object.values(PIECE_PROMOTION_MAP).includes(piece.pieceString)
+                  ? PROMOTED_PIECE_COLOR
+                  : UNPROMOTED_PIECE_COLOR;
+                pieceNode = (<ThemeProvider theme={theme}>
                   <Typography
                     variant='h4'
                     sx={{
                       transform: `rotate(${piece.getOwner() === Player.WHITE ? '180' : '0'}deg)`,
+                      ...pieceColor,
                     }}
                   >
                     {piece.displayCharacter}
                   </Typography>
-                </ThemeProvider>
-                : <></>);
+                </ThemeProvider>);
+              }
 
               const handleClick = (): void => {
                 if (isMoveInitiated) {
-                  const move = new Move(src, coord);
+                  const move = new Move(board.turn, src, coord);
                   if (board.validateMove(move)) {
                     const moveFen = board.performMove(move);
                     setBoard(moveFen);
