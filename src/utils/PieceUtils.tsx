@@ -34,24 +34,25 @@ export const MOVEMENT_PATTERNS: Record<PieceType, number[]> = {
   [PieceType.PROMOTED_PAWN]: [1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
 };
 
-export const DISPLAY_CHARACTERS: Record<string, string | Record<Player, string>> = {
-  [PieceType.KING]: {
-    [Player.BLACK]: '玉',
-    [Player.WHITE]: '王',
-  },
-  [PieceType.ROOK]: '飛',
-  [PieceType.BISHOP]: '角',
-  [PieceType.GOLDEN_GENERAL]: '金',
-  [PieceType.SILVER_GENERAL]: '銀',
-  [PieceType.KNIGHT]: '桂',
-  [PieceType.LANCE]: '香',
-  [PieceType.PAWN]: '歩',
-  [PieceType.DRAGON]: '龍',
-  [PieceType.HORSE]: '馬',
-  [PieceType.PROMOTED_SILVER_GENERAL]: '全',
-  [PieceType.PROMOTED_KNIGHT]: '圭',
-  [PieceType.PROMOTED_LANCE]: '杏',
-  [PieceType.PROMOTED_PAWN]: 'と',
+export const DISPLAY_CHARACTERS = (player: Player): Record<string, string> => {
+  return {
+    [PieceType.KING]: player === Player.BLACK
+      ? '玉'
+      : '王',
+    [PieceType.ROOK]: '飛',
+    [PieceType.BISHOP]: '角',
+    [PieceType.GOLDEN_GENERAL]: '金',
+    [PieceType.SILVER_GENERAL]: '銀',
+    [PieceType.KNIGHT]: '桂',
+    [PieceType.LANCE]: '香',
+    [PieceType.PAWN]: '歩',
+    [PieceType.DRAGON]: '龍',
+    [PieceType.HORSE]: '馬',
+    [PieceType.PROMOTED_SILVER_GENERAL]: '全',
+    [PieceType.PROMOTED_KNIGHT]: '圭',
+    [PieceType.PROMOTED_LANCE]: '杏',
+    [PieceType.PROMOTED_PAWN]: 'と',
+  };
 };
 
 export const PIECE_TYPE_LOOKUP: string = 'orbgsklpdhznlt';
@@ -73,6 +74,9 @@ export const PIECE_PROMOTION_MAP: Record<PieceType, PieceType | undefined> = {
   [PieceType.PROMOTED_PAWN]: undefined,
 };
 
+/**
+ * Class representing a piece.
+ */
 export class Piece {
   readonly pieceType: PieceType;
 
@@ -82,25 +86,70 @@ export class Piece {
 
   readonly displayCharacter: string;
 
+  /**
+   * Constructs a piece object.
+   *
+   * lower case -> black piece
+   * upper case -> white piece
+   *
+   * o -> king
+   * r -> rook
+   * b -> bishop
+   * g -> golden general
+   * s -> silver general
+   * k -> knight
+   * l -> lance
+   * p -> pawn
+   * d -> dragon (promoted rook)
+   * h -> horse (promoted bishop)
+   * z -> promoted silver general
+   * n -> promoted knight
+   * c -> promoted lance
+   * t -> promoted pawn
+   *
+   * @param pieceChar
+   */
   constructor(pieceChar: string) {
     this.pieceType = PIECE_TYPE_LOOKUP.indexOf(pieceChar.toLowerCase());
     this.owner = /[A-Z]/g.test(pieceChar)
       ? Player.WHITE
       : Player.BLACK;
     this.movementPattern = MOVEMENT_PATTERNS[this.pieceType];
-    this.displayCharacter = this.pieceType === PieceType.KING
-      ? (DISPLAY_CHARACTERS[this.pieceType] as Record<Player, string>)[this.owner]
-      : DISPLAY_CHARACTERS[this.pieceType] as string;
+    this.displayCharacter = DISPLAY_CHARACTERS(this.owner)[this.pieceType];
   }
 
+  static fromTypeAndOwner(pieceType: PieceType, owner: Player): Piece {
+    const pieceTypeChar: string = PIECE_TYPE_LOOKUP[pieceType];
+    return new Piece(owner === Player.BLACK
+      ? pieceTypeChar.toUpperCase()
+      : pieceTypeChar);
+  }
+
+  /**
+   * Checks if the piece type is eligible for promotion.
+   *
+   * rook -> dragon
+   * bishop -> horse
+   * knight -> promoted knight
+   * silver general -> promoted silver general
+   * lance -> promoted lance
+   * pawn -> promoted pawn
+   */
   isPromotable(): boolean {
     return !!PIECE_PROMOTION_MAP[this.pieceType];
   }
 
+  /**
+   * Checks if the piece type is a promoted piece.
+   */
   isPromoted(): boolean {
     return Object.values(PIECE_PROMOTION_MAP).includes(this.pieceType);
   }
 
+  /**
+   * Promotes the piece. If the piece type is not eligible for promotion
+   * (king, golden general, or any already promoted piece), returns undefined.
+   */
   promote(): Piece | undefined {
     if (this.isPromotable()) {
       const promotedTypeChar: string = PIECE_TYPE_LOOKUP[PIECE_PROMOTION_MAP[this.pieceType]!];
@@ -111,6 +160,35 @@ export class Piece {
     return undefined;
   }
 
+  /**
+   * Demotes the piece. This happens when a player captures a promoted piece.
+   * We flip PIECE_PROMOTION_MAP to see what piece type a promoted piece demotes to.
+   * If the piece is not eligible for promotion, returns undefined.
+   *
+   * dragon -> rook
+   * horse -> bishop
+   * promoted knight -> knight
+   * promoted silver general -> silver general
+   * promoted lance -> lance
+   * promoted pawn -> pawn
+   */
+  demote(): Piece | undefined {
+    if (this.isPromoted()) {
+      let demotedPiece: Piece | undefined;
+      (Object.entries(PIECE_PROMOTION_MAP).filter(([, value]) => value !== undefined) as Array<[string, PieceType]>)
+        .forEach(([key, value]: [string, PieceType]) => {
+          if (this.pieceType === value) {
+            demotedPiece = Piece.fromTypeAndOwner(parseInt(key), this.owner);
+          }
+        });
+      return demotedPiece;
+    }
+    return undefined;
+  }
+
+  /**
+   * Returns the way this piece would be represented in FEN notation.
+   */
   toFenChar(): string {
     const pieceTypeChar: string = PIECE_TYPE_LOOKUP[this.pieceType];
     return this.owner === Player.WHITE

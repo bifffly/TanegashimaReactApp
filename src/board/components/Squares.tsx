@@ -23,6 +23,10 @@ const PROMOTED_PIECE_COLOR = {
   color: '#FF0000',
 };
 
+const PROMOTED_HIGHLIGHTED_PIECE_COLOR = {
+  color: '#800000',
+};
+
 const UNPROMOTED_PIECE_COLOR = {
   color: '#000000',
 };
@@ -62,27 +66,6 @@ export function Squares(): ReactElement {
             {[...Array(9)].map((_, col) => {
               const squareColor = col % 2 === row % 2 ? 'white' : 'black';
               const coord = new Coordinate(row, col);
-              const piece = board.getPieceAt(coord);
-              let pieceNode = (<></>);
-              if (piece) {
-                const pieceOrientation = piece.owner === Player.BLACK
-                  ? UNFLIPPED_PIECE_ORIENTATION
-                  : FLIPPED_PIECE_ORIENTATION;
-                const pieceColor = piece.isPromoted()
-                  ? PROMOTED_PIECE_COLOR
-                  : UNPROMOTED_PIECE_COLOR;
-                pieceNode = (<ThemeProvider theme={theme}>
-                  <Typography
-                    variant='h4'
-                    sx={{
-                      ...pieceOrientation,
-                      ...pieceColor,
-                    }}
-                  >
-                    {piece.displayCharacter}
-                  </Typography>
-                </ThemeProvider>);
-              }
 
               const handleClick = (): void => {
                 if (isMoveInitiated) {
@@ -111,6 +94,30 @@ export function Squares(): ReactElement {
                   shouldBeHighlighted = true;
                   break;
                 }
+              }
+
+              const piece = board.getPieceAt(coord);
+              let pieceNode = (<></>);
+              if (piece) {
+                const pieceOrientation = piece.owner === Player.BLACK
+                  ? UNFLIPPED_PIECE_ORIENTATION
+                  : FLIPPED_PIECE_ORIENTATION;
+                const pieceColor = piece.isPromoted()
+                  ? shouldBeHighlighted
+                    ? PROMOTED_HIGHLIGHTED_PIECE_COLOR
+                    : PROMOTED_PIECE_COLOR
+                  : UNPROMOTED_PIECE_COLOR;
+                pieceNode = (<ThemeProvider theme={theme}>
+                  <Typography
+                    variant='h4'
+                    sx={{
+                      ...pieceOrientation,
+                      ...pieceColor,
+                    }}
+                  >
+                    {piece.displayCharacter}
+                  </Typography>
+                </ThemeProvider>);
               }
 
               return (
