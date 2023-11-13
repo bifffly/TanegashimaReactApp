@@ -1,5 +1,10 @@
 import { Player } from './BoardUtils';
 
+export enum PieceColor {
+  BLACK = 'b',
+  WHITE = 'w',
+}
+
 export enum PieceType {
   KING,
   ROOK,
@@ -34,9 +39,9 @@ export const MOVEMENT_PATTERNS: Record<PieceType, number[]> = {
   [PieceType.PROMOTED_PAWN]: [1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
 };
 
-export const DISPLAY_CHARACTERS = (player: Player): Record<string, string> => {
+export const DISPLAY_CHARACTERS = (color: PieceColor): Record<string, string> => {
   return {
-    [PieceType.KING]: player === Player.BLACK
+    [PieceType.KING]: color === PieceColor.BLACK
       ? '玉'
       : '王',
     [PieceType.ROOK]: '飛',
@@ -82,10 +87,6 @@ export class Piece {
 
   readonly owner: Player;
 
-  readonly movementPattern: number[];
-
-  readonly displayCharacter: string;
-
   /**
    * Constructs a piece object.
    *
@@ -112,17 +113,23 @@ export class Piece {
   constructor(pieceChar: string) {
     this.pieceType = PIECE_TYPE_LOOKUP.indexOf(pieceChar.toLowerCase());
     this.owner = /[A-Z]/g.test(pieceChar)
-      ? Player.WHITE
-      : Player.BLACK;
-    this.movementPattern = MOVEMENT_PATTERNS[this.pieceType];
-    this.displayCharacter = DISPLAY_CHARACTERS(this.owner)[this.pieceType];
+      ? Player.GOTE
+      : Player.SENTE;
   }
 
   static fromTypeAndOwner(pieceType: PieceType, owner: Player): Piece {
     const pieceTypeChar: string = PIECE_TYPE_LOOKUP[pieceType];
-    return new Piece(owner === Player.BLACK
+    return new Piece(owner === Player.GOTE
       ? pieceTypeChar.toUpperCase()
       : pieceTypeChar);
+  }
+
+  getMovementPattern(): number[] {
+    return MOVEMENT_PATTERNS[this.pieceType];
+  }
+
+  getDisplayCharacter(pieceColor: PieceColor): string {
+    return DISPLAY_CHARACTERS(pieceColor)[this.pieceType];
   }
 
   /**
@@ -153,7 +160,7 @@ export class Piece {
   promote(): Piece | undefined {
     if (this.isPromotable()) {
       const promotedTypeChar: string = PIECE_TYPE_LOOKUP[PIECE_PROMOTION_MAP[this.pieceType]!];
-      return this.owner === Player.WHITE
+      return this.owner === Player.GOTE
         ? new Piece(promotedTypeChar.toUpperCase())
         : new Piece(promotedTypeChar);
     }
@@ -191,8 +198,13 @@ export class Piece {
    */
   toFenChar(): string {
     const pieceTypeChar: string = PIECE_TYPE_LOOKUP[this.pieceType];
-    return this.owner === Player.WHITE
+    return this.owner === Player.GOTE
       ? pieceTypeChar.toUpperCase()
       : pieceTypeChar;
+  }
+
+  public equals(piece: Piece): boolean {
+    return this.pieceType === piece.pieceType
+      && this.owner === piece.owner;
   }
 }

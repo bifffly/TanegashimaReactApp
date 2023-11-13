@@ -28,7 +28,7 @@ export class Move {
    * Checks whether this move would make the piece being moved eligible for promotion.
    */
   isPromotable(): boolean {
-    return this.player === Player.WHITE
+    return this.player === Player.GOTE
       ? this.trg.row > 5
       : this.trg.row < 3;
   }
