@@ -14,7 +14,7 @@ export class Move {
     this.trg = trg;
   }
 
-  isPromotionEligible(): boolean {
+  isPromotable(): boolean {
     return this.player === Player.WHITE
       ? this.trg.row > 5
       : this.trg.row < 3;
