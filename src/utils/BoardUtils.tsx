@@ -12,6 +12,9 @@ export enum Player {
 export const BLACK_DIRECTION_OFFSETS: number[] = [-10, 10, -1, 1, -11, -9, 9, 11, -21, -19];
 export const WHITE_DIRECTION_OFFSETS: number[] = [10, -10, 1, -1, 9, 11, -9, -11, 21, 19];
 
+/**
+ * Any of the eight cardinal directions a piece can move in (plus two for the L-shaped knight moves)
+ */
 export enum Direction {
   FRONT = 0,
   BACK = 1,
@@ -25,6 +28,9 @@ export enum Direction {
   KNIGHTRIGHT = 9,
 }
 
+/**
+ * Class for representing the state of the shogi board.
+ */
 export class BoardState {
   board: string;
 
@@ -46,6 +52,12 @@ export class BoardState {
     this.turnNumber = parseInt(args[4]);
   }
 
+  /**
+   * Given a coordinate, returns the piece on the board at that spot.
+   * If no piece exists there, returns undefined.
+   *
+   * @param coord desired coordinate
+   */
   getPieceAt(coord: Coordinate): Piece | undefined {
     const expandedBoard = this.expandBoard();
     const char = expandedBoard.charAt(coord.getFenIdx());
@@ -53,6 +65,10 @@ export class BoardState {
     return pieceString ? new Piece(pieceString) : undefined;
   }
 
+  /**
+   * Expands the FEN representation of the board.
+   * Replaces concatenated empty spaces with `1` for every empty space.
+   */
   expandBoard(): string {
     return this.board
       .replace(/9/g, '111111111')
@@ -65,6 +81,12 @@ export class BoardState {
       .replace(/2/g, '11');
   }
 
+  /**
+   * Condenses an expanded FEN representation of a board.
+   * If any consecutive `1`s exist, concatenates them.
+   *
+   * @param board FEN representation to condense
+   */
   static condenseBoard(board: string): string {
     return board
       .replace(/111111111/g, '9')
@@ -77,6 +99,11 @@ export class BoardState {
       .replace(/11/g, '2');
   }
 
+  /**
+   * Generates a list of legal moves the piece at the coordinate can make.
+   *
+   * @param src starting coordinate of the move
+   */
   generateMovesFromSrc(src: Coordinate): Move[] {
     const moves: Move[] = [];
     const piece = this.getPieceAt(src);
@@ -115,6 +142,11 @@ export class BoardState {
     return moves;
   }
 
+  /**
+   * Checks whether the move in question is legal.
+   *
+   * @param move move to be validated
+   */
   validateMove(move: Move): boolean {
     const moves: Move[] = this.generateMovesFromSrc(move.src);
 
@@ -129,6 +161,11 @@ export class BoardState {
     return isPresent;
   }
 
+  /**
+   * Performs the requested move, assuming it has already been checked for legality.
+   *
+   * @param move move to be performed
+   */
   performMove(move: Move): BoardState {
     const expandedBoard = this.expandBoard();
     const srcIdx = move.src.getFenIdx();
@@ -138,7 +175,11 @@ export class BoardState {
     if (move.isPromotable() && srcPiece.isPromotable()) {
       srcPiece = srcPiece.promote()!;
     }
-    const trgPiece = this.getPieceAt(move.trg);
+    let trgPiece = this.getPieceAt(move.trg);
+    // Promoted pieces get demoted when in hand
+    if (trgPiece && trgPiece.isPromoted()) {
+      trgPiece = trgPiece.demote();
+    }
 
     const trgReplacedBoard = expandedBoard.substring(0, trgIdx) + srcPiece.toFenChar() + expandedBoard.substring(trgIdx + 1);
     const newExpandedBoard = trgReplacedBoard.substring(0, srcIdx) + '1' + trgReplacedBoard.substring(srcIdx + 1);
@@ -147,13 +188,13 @@ export class BoardState {
     const moveTurn = this.turn === Player.WHITE ? Player.BLACK : Player.WHITE;
     const moveWhiteCaptures = trgPiece && this.turn === Player.WHITE
       ? this.whiteCaptures !== '-'
-        ? this.whiteCaptures + trgPiece.toFenChar()
-        : trgPiece.toFenChar()
+        ? this.whiteCaptures + trgPiece.toFenChar().toLowerCase()
+        : trgPiece.toFenChar().toLowerCase()
       : this.whiteCaptures;
     const moveBlackCaptures = trgPiece && this.turn === Player.BLACK
       ? this.blackCaptures !== '-'
-        ? this.blackCaptures + trgPiece.toFenChar()
-        : trgPiece.toFenChar()
+        ? this.blackCaptures + trgPiece.toFenChar().toLowerCase()
+        : trgPiece.toFenChar().toLowerCase()
       : this.blackCaptures;
     const moveTurnNumber = this.turn === Player.WHITE ? this.turnNumber + 1 : this.turnNumber;
 
