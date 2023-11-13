@@ -5,17 +5,19 @@ import {
   createTheme, Grid, ThemeProvider, Typography,
 } from '@mui/material';
 import {
-  BoardState, Player, START_FEN_STRING,
+  type BoardState, Player, PLAYER_PIECE_COLOR_MAP,
 } from '../../utils/BoardUtils';
 import { Move } from '../../utils/MoveUtils';
 import { Coordinate } from '../../utils/CoordinateUtils';
+import { Drop } from '../../utils/DropUtils';
+import { type Piece } from '../../utils/PieceUtils';
 import { Square } from './Square';
 
-const UNFLIPPED_PIECE_ORIENTATION = {
+export const UNFLIPPED_PIECE_ORIENTATION = {
   transform: 'rotate(0deg)',
 };
 
-const FLIPPED_PIECE_ORIENTATION = {
+export const FLIPPED_PIECE_ORIENTATION = {
   transform: 'rotate(180deg)',
 };
 
@@ -31,8 +33,21 @@ const UNPROMOTED_PIECE_COLOR = {
   color: '#000000',
 };
 
-export function Squares(): ReactElement {
-  const [board, setBoard] = useState<BoardState>(new BoardState(START_FEN_STRING));
+interface SquaresProps {
+  boardState: BoardState
+  setBoardState: (boardState: BoardState) => void
+  dropSrc: Piece | undefined
+  setDropSrc: (dropType: Piece | undefined) => void
+}
+
+export function Squares(props: SquaresProps): ReactElement {
+  const {
+    boardState,
+    setBoardState,
+    dropSrc,
+    setDropSrc,
+  } = props;
+
   const [src, setSrc] = useState<Coordinate>(new Coordinate(-1, -1));
   const [isMoveInitiated, setIsMoveInitiated] = useState<boolean>(false);
   const [possTrgs, setPossTrgs] = useState<Coordinate[]>([]);
@@ -69,16 +84,23 @@ export function Squares(): ReactElement {
 
               const handleClick = (): void => {
                 if (isMoveInitiated) {
-                  const move = new Move(board.turn, src, coord);
-                  if (board.validateMove(move)) {
-                    const moveFen = board.performMove(move);
-                    setBoard(moveFen);
+                  const move = new Move(boardState.currPlaying, src, coord);
+                  if (boardState.validateMove(move)) {
+                    const moveFen = boardState.performMove(move);
+                    setBoardState(moveFen);
                   }
                   setIsMoveInitiated(false);
                   setPossTrgs([]);
+                } else if (dropSrc) {
+                  const drop = new Drop(dropSrc, coord);
+                  if (boardState.validateDrop(drop)) {
+                    const dropFen = boardState.performDrop(drop);
+                    setBoardState(dropFen);
+                  }
+                  setDropSrc(undefined);
                 } else {
                   setSrc(coord);
-                  const moves = board.generateMovesFromSrc(coord);
+                  const moves = boardState.generateLegalMovesFromSrc(coord);
                   if (moves.length !== 0) {
                     setIsMoveInitiated(true);
                     setPossTrgs(moves.map((move: Move) => {
@@ -96,10 +118,10 @@ export function Squares(): ReactElement {
                 }
               }
 
-              const piece = board.getPieceAt(coord);
+              const piece = boardState.getPieceAt(coord);
               let pieceNode = (<></>);
               if (piece) {
-                const pieceOrientation = piece.owner === Player.BLACK
+                const pieceOrientation = piece.owner === Player.SENTE
                   ? UNFLIPPED_PIECE_ORIENTATION
                   : FLIPPED_PIECE_ORIENTATION;
                 const pieceColor = piece.isPromoted()
@@ -115,7 +137,7 @@ export function Squares(): ReactElement {
                       ...pieceColor,
                     }}
                   >
-                    {piece.displayCharacter}
+                    {piece.getDisplayCharacter(PLAYER_PIECE_COLOR_MAP[piece.owner])}
                   </Typography>
                 </ThemeProvider>);
               }
