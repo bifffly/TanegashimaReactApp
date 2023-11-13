@@ -263,31 +263,58 @@ export class BoardState {
     return new BoardState(newBoard, newCurrPlaying, this.senteCaptures, this.goteCaptures, newTurn);
   }
 
-  generateLegalDropsForPlayer(player: Player): Drop[] {
-    console.log(`generating legal drops for player ${player}`);
-    return [];
-  }
-
+  /**
+   * Checks whether the drop in question is legal.
+   * 1. Cannot drop a piece if you have none of that piece in hand
+   * 2. Cannot drop a piece onto a row where it cannot move
+   * 3. Cannot drop a pawn onto a column where you already have a pawn
+   *
+   * @param drop drop to be validated
+   */
   validateDrop(drop: Drop): boolean {
-    return this.currPlaying === Player.SENTE
-      ? this.senteCaptures.get(drop.piece.pieceType)! > 0
-      : this.goteCaptures.get(drop.piece.pieceType)! > 0;
+    // Cannot drop a piece of which you have none in hand.
+    if (drop.piece.owner === Player.SENTE
+      ? this.senteCaptures.get(drop.piece.pieceType)! === 0
+      : this.goteCaptures.get(drop.piece.pieceType)! === 0) {
+      return false;
+    }
 
-    /*
-    const drops: Drop[] = this.generateLegalDropsForPlayer(drop.piece.owner);
-
-    let isPresent = false;
-    for (let i = 0; i < drops.length; i++) {
-      const currDrop = drops[i];
-      if (drop.equals(currDrop)) {
-        isPresent = true;
-        break;
+    // Cannot drop a piece onto a row where it has no moves.
+    // For pawns and lances, this is the last row.
+    // For knights, this is the last two rows.
+    if ([PieceType.PAWN, PieceType.LANCE, PieceType.KNIGHT].includes(drop.piece.pieceType)) {
+      if (drop.piece.pieceType === PieceType.KNIGHT) {
+        if ((drop.piece.owner === Player.SENTE && drop.trg.row < 2)
+          || (drop.piece.owner === Player.GOTE && drop.trg.row > 6)) {
+          return false;
+        }
+      } else {
+        if ((drop.piece.owner === Player.SENTE && drop.trg.row < 1)
+          || (drop.piece.owner === Player.GOTE && drop.trg.row > 7)) {
+          return false;
+        }
       }
     }
-    return isPresent;
-     */
+
+    // Cannot drop a pawn onto a column where you already have a pawn.
+    if (drop.piece.pieceType === PieceType.PAWN) {
+      for (let row = 0; row < 8; row++) {
+        const coord = new Coordinate(row, drop.trg.col);
+        const piece = this.getPieceAt(coord);
+        if (piece && piece.pieceType === PieceType.PAWN && drop.piece.owner === piece.owner) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
+  /**
+   * Performs the requested drop, assuming it has already been checked for legality.
+   *
+   * @param drop drop to be performed
+   */
   performDrop(drop: Drop): BoardState {
     const dropPiece = Piece.fromTypeAndOwner(drop.piece.pieceType, drop.piece.owner);
     const expandedBoard = this.expandBoard();
