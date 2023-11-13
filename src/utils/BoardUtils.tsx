@@ -1,6 +1,4 @@
-import {
-  Piece, PIECE_PROMOTION_MAP,
-} from './PieceUtils';
+import { Piece } from './PieceUtils';
 import { Coordinate } from './CoordinateUtils';
 import { Move } from './MoveUtils';
 
@@ -83,7 +81,7 @@ export class BoardState {
     const moves: Move[] = [];
     const piece = this.getPieceAt(src);
     if (piece) {
-      if (piece.getOwner() !== this.turn) {
+      if (piece.owner !== this.turn) {
         return moves;
       }
 
@@ -92,7 +90,7 @@ export class BoardState {
       for (let i = 0; i < Object.keys(Direction).length; i++) {
         const directionLimit = pattern[i];
         for (let n = 0; n < directionLimit; n++) {
-          const directionOffsets = piece.getOwner() === Player.WHITE
+          const directionOffsets = piece.owner === Player.WHITE
             ? WHITE_DIRECTION_OFFSETS
             : BLACK_DIRECTION_OFFSETS;
           const trgIdx = src.getFenIdx() + directionOffsets[i] * (n + 1);
@@ -100,15 +98,15 @@ export class BoardState {
           const trgPiece = this.getPieceAt(trg);
 
           // Move in this direction blocked by friendly piece, can't move any further
-          if (trgPiece && trgPiece.getOwner() === this.turn) {
+          if (trgPiece && trgPiece.owner === this.turn) {
             break;
           }
 
           // Can move here!
-          moves.push(new Move(piece.getOwner(), src, trg));
+          moves.push(new Move(piece.owner, src, trg));
 
           // Move in this direction blocked by opponent piece, can't move any further
-          if (trgPiece && trgPiece.getOwner() !== this.turn) {
+          if (trgPiece && trgPiece.owner !== this.turn) {
             break;
           }
         }
@@ -135,26 +133,27 @@ export class BoardState {
     const expandedBoard = this.expandBoard();
     const srcIdx = move.src.getFenIdx();
     const trgIdx = move.trg.getFenIdx();
-    let srcChar = expandedBoard.charAt(srcIdx);
-    if (move.isPromotionEligible() && Object.keys(PIECE_PROMOTION_MAP).includes(srcChar)) {
-      srcChar = PIECE_PROMOTION_MAP[srcChar];
+    const srcChar = expandedBoard.charAt(srcIdx);
+    let srcPiece = new Piece(srcChar);
+    if (move.isPromotable() && srcPiece.isPromotable()) {
+      srcPiece = srcPiece.promote()!;
     }
     const trgPiece = this.getPieceAt(move.trg);
 
-    const trgReplacedBoard = expandedBoard.substring(0, trgIdx) + srcChar + expandedBoard.substring(trgIdx + 1);
+    const trgReplacedBoard = expandedBoard.substring(0, trgIdx) + srcPiece.toFenChar() + expandedBoard.substring(trgIdx + 1);
     const newExpandedBoard = trgReplacedBoard.substring(0, srcIdx) + '1' + trgReplacedBoard.substring(srcIdx + 1);
 
     const moveBoard = BoardState.condenseBoard(newExpandedBoard);
     const moveTurn = this.turn === Player.WHITE ? Player.BLACK : Player.WHITE;
     const moveWhiteCaptures = trgPiece && this.turn === Player.WHITE
       ? this.whiteCaptures !== '-'
-        ? this.whiteCaptures + trgPiece.pieceString
-        : trgPiece.pieceString
+        ? this.whiteCaptures + trgPiece.toFenChar()
+        : trgPiece.toFenChar()
       : this.whiteCaptures;
     const moveBlackCaptures = trgPiece && this.turn === Player.BLACK
       ? this.blackCaptures !== '-'
-        ? this.blackCaptures + trgPiece.pieceString
-        : trgPiece.pieceString
+        ? this.blackCaptures + trgPiece.toFenChar()
+        : trgPiece.toFenChar()
       : this.blackCaptures;
     const moveTurnNumber = this.turn === Player.WHITE ? this.turnNumber + 1 : this.turnNumber;
 

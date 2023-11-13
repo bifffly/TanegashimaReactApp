@@ -2,17 +2,22 @@ import {
   type ReactElement, useState,
 } from 'react';
 import {
-  createTheme,
-  Grid, ThemeProvider, Typography,
+  createTheme, Grid, ThemeProvider, Typography,
 } from '@mui/material';
 import {
-  BoardState, Player,
-  START_FEN_STRING,
+  BoardState, Player, START_FEN_STRING,
 } from '../../utils/BoardUtils';
 import { Move } from '../../utils/MoveUtils';
 import { Coordinate } from '../../utils/CoordinateUtils';
-import { PIECE_PROMOTION_MAP } from '../../utils/PieceUtils';
 import { Square } from './Square';
+
+const UNFLIPPED_PIECE_ORIENTATION = {
+  transform: 'rotate(0deg)',
+};
+
+const FLIPPED_PIECE_ORIENTATION = {
+  transform: 'rotate(180deg)',
+};
 
 const PROMOTED_PIECE_COLOR = {
   color: '#FF0000',
@@ -60,14 +65,17 @@ export function Squares(): ReactElement {
               const piece = board.getPieceAt(coord);
               let pieceNode = (<></>);
               if (piece) {
-                const pieceColor = Object.values(PIECE_PROMOTION_MAP).includes(piece.pieceString)
+                const pieceOrientation = piece.owner === Player.BLACK
+                  ? UNFLIPPED_PIECE_ORIENTATION
+                  : FLIPPED_PIECE_ORIENTATION;
+                const pieceColor = piece.isPromoted()
                   ? PROMOTED_PIECE_COLOR
                   : UNPROMOTED_PIECE_COLOR;
                 pieceNode = (<ThemeProvider theme={theme}>
                   <Typography
                     variant='h4'
                     sx={{
-                      transform: `rotate(${piece.getOwner() === Player.WHITE ? '180' : '0'}deg)`,
+                      ...pieceOrientation,
                       ...pieceColor,
                     }}
                   >
